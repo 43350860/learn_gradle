@@ -11,9 +11,118 @@ task hello2 << {
     println 'Hello2 world!'
 }
 
-
+//Example 6.4. 在 Gradle 任务里使用 Groovy
 task upper << {
     String my_name = 'my_name'
     println 'Original: ' + my_name
-    println 'Upper Case: ' + my_name.toUpperCase();
+    println 'Upper Case: ' + my_name.toUpperCase()
+}
+
+//Example 6.5. 在 Gradle 任务里使用 Groovy
+//for循环4次，并打印出每一次的index
+task count << {
+    4.times { print "$it " }
+}
+
+task count2 << {
+    for (int i = 0; i < 10; i++) {
+        print "$i "
+    }
+}
+
+//Example 6.7. Lazy dependsOn - 其他的任务还没有存在
+task intro(dependsOn: hello) << {
+    println "I'm Gradle!"
+}
+
+//Example 6.7. Lazy dependsOn - 其他的任务还没有存在
+task taskX(dependsOn: 'taskY') << {
+    println 'taskX'
+}
+
+task taskY << {
+    println 'taskY'
+}
+
+
+//Example 6.8. 动态的创建一个任务
+4.times { counter ->
+    task "dynamicTask$counter" << {
+        println "Print content： I'am task number $counter"
+    }
+}
+
+//Example 6.9. 通过API访问一个任务 - 加入一个依赖
+//为动态任务3创建一个依赖， 在执行任务3之前，需要先执行0,1,2
+dynamicTask3.dependsOn dynamicTask0, dynamicTask1, dynamicTask2
+
+
+//Example 6.10. 通过API访问一个任务 - 加入行为
+//=== 定义一个正常的任务
+task invokeTask << {
+    println 'Invoking task'
+}
+
+//=== 定义invokeTask的前置拦截
+invokeTask.doFirst {
+    println "Pre $invokeTask.name"
+}
+
+//=== 定义invokeTask的后置拦截
+invokeTask.doLast {
+    println "Post $invokeTask.name"
+}
+
+//=== 在invokeTask基础之上追加逻辑
+invokeTask << {
+    println "Append $invokeTask.name"
+}
+
+//Example 6.12. 给任务加入额外的属性
+//* 定义全局字段
+ext.gLang = "zh_CN.UTF-8"
+ext {
+    gName = "张三"
+    gAge = "21"
+}
+//注意:这是一个类，它没有 << 符号。
+task myProperties {
+    //声明类里面的字段
+    ext.lang = "zh_CN.utf-8"
+}
+
+task printMyProperties << {
+    //打印上面那个类里面的字段值
+    println "Lang: $myProperties.lang"
+    //打印全局字段
+    println gLang
+    println gName
+    println gAge
+    println rootProject.ext.gName
+}
+
+
+// Example 6.13. 使用 AntBuilder 来执行 ant.loadfile 任务
+task loadFile << {
+    def files = file('.').listFiles().sort()
+    files.each { File file ->
+        if (file.isFile()) {
+            ant.loadfile(srcFile: file, property: file.name)
+            println " *** $file.name *** "
+            println "${ant.properties[file.name]}"
+        }
+    }
+}
+
+//Example 6.14. 使用方法规划你的构建逻辑
+task loadFiles2 << {
+    fileList(".").each { File file ->
+        ant.loadfile(srcFile: file, property: file.name)
+        println "I'am found of $file.name"
+    }
+}
+
+//
+File[] fileList(String dir) {
+    return file(dir).listFiles({file -> file.isFile()} as FileFilter).sort();
 }
