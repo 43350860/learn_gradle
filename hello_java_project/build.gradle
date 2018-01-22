@@ -1,0 +1,6 @@
+
+//加入java插件
+apply plugin: 'java'
+
+
+
